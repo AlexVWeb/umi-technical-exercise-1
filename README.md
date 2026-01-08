@@ -1,8 +1,33 @@
 # umi-technical-exercise
 
-Technical interview exercise for UMI candidates
+Technical interview exercise on n8n for UMI candidates
 
 ---
+
+## Getting Started – Install n8n Locally
+
+Prerequisites:
+
+* Node.js
+* npm
+
+Install n8n globally:
+
+```bash
+npm install -g n8n
+```
+
+Start n8n:
+
+```bash
+npx n8n
+```
+
+n8n will be available at:
+
+```
+http://localhost:5678
+```
 
 ## Overview
 
@@ -123,7 +148,9 @@ We expect:
 * how users, articles, and favorites relate
 * how updates are handled
 * how duplicates are avoided
-* a SQL schema for the database
+
+You do **not** need to provide full SQL schemas unless you want to
+Clear instructions and reasoning are enough
 
 ---
 
