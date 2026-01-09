@@ -1,0 +1,12 @@
+{
+  "name": "exercise1-js",
+  "scripts": {
+    "start": "tsx main.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

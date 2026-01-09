@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "NodeNext",
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true
+  }
+}
