@@ -136,6 +136,70 @@ Clear instructions and reasoning are enough
 
 ---
 
+## Expected Output
+
+### Testing Workflows with curl
+
+Once your workflows are set up and running in n8n, you can test them using the following curl commands:
+
+#### Step 1 – Users Creation Workflow
+
+Trigger the users creation workflow:
+
+```bash
+curl -X POST http://localhost:5678/webhook-test/users/create
+```
+
+#### Step 2 – Articles Management Workflow
+
+Create a new article:
+
+```bash
+curl -X POST http://localhost:5678/webhook-test/articles/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user-123",
+    "title": "My First Article",
+    "body": "This is the content of my article."
+    ...
+  }'
+```
+
+Update an existing article:
+
+```bash
+curl -X PUT http://localhost:5678/webhook-test/articles/update \
+  -H "Content-Type: application/json" \
+  -d '{
+    "articleId": "article-456",
+    "userId": "user-123",
+    "title": "Updated Article Title",
+    "body": "Updated content here."
+    ...
+  }'
+```
+
+#### Step 3 – Favorites Logic
+
+Mark an article as favorite:
+
+```bash
+curl -X POST http://localhost:5678/webhook-test/favorites/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user-123",
+    "articleId": "article-456"
+  }'
+```
+
+Retrieve a user's favorite articles:
+
+```bash
+curl -X GET "http://localhost:5678/webhook-test/favorites/user-123"
+```
+
+---
+
 ## Documentation
 
 Provide a short explanation covering:
