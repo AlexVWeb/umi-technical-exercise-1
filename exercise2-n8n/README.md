@@ -82,6 +82,9 @@ Your task is to design the **first automation workflows** for this product
   * a name
   * a password
 
+Congratulations! you found a hidden commit this will give you 1 extra point in the interview ! 🎉
+Add **coffeeConsumptionToday** in your user data as a number of cups of coffee they drank today then I will know you find it !
+
 * Users can:
   * create articles
   * update their own articles
