@@ -89,14 +89,22 @@ Your task is to design the **first automation workflows** for this product
 
 All articles are created and managed internally by users
 
-### Step 1 – Users Creation Workflow
+### Step 1 – Users Creation & Authentication Workflow
 
-Design a workflow that:
+Design workflows that:
 
-* fetches users from `randomuser.me`
-* extracts relevant fields
-* prepares user data for storage
-* avoids creating duplicate users
+* fetch users from `randomuser.me`
+* extract relevant fields
+* prepare user data for storage
+* avoid creating duplicate users
+* implement a login endpoint that authenticates users based on their credentials (email and password)
+* validate user credentials securely
+* return an authentication token or session identifier upon successful login
+* handle authentication failures appropriately
+
+**⚠️ Security Considerations:**
+
+When implementing authentication, be mindful of security best practices. Consider how you'll protect against common vulnerabilities and ensure sensitive data is handled appropriately. Document your security decisions and explain any trade-offs you make.
 
 
 ### Step 2 – Articles Management Workflow
@@ -142,12 +150,40 @@ Clear instructions and reasoning are enough
 
 Once your workflows are set up and running in n8n, you can test them using the following curl commands:
 
-#### Step 1 – Users Creation Workflow
+#### Step 1 – Users Creation & Authentication Workflow
 
 Trigger the users creation workflow:
 
 ```bash
 curl -X POST http://localhost:5678/webhook-test/users/create
+```
+
+Authenticate a user:
+
+```bash
+curl -X POST http://localhost:5678/webhook-test/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "userpassword123"
+  }'
+```
+
+Expected response on success:
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "userId": "user-123",
+}
+```
+
+Expected response on failure:
+```json
+{
+  "success": false,
+  "message": "Invalid credentials"
+}
 ```
 
 #### Step 2 – Articles Management Workflow
@@ -217,6 +253,7 @@ During the interview debrief, we will focus on:
 * workflow clarity and logic
 * understanding of automation concepts
 * data modeling and relationships
+* security awareness and implementation
 * ability to explain and defend decisions
 * LLMs knowledge and how you would use them in the exercise
 
