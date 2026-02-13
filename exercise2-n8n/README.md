@@ -76,10 +76,10 @@ Your task is to design the **first automation workflows** for this product
 ### Product Story
 
 * UMI has **users** who can create and update **articles**
-* Users are generated from the **Random User API** (`randomuser.me`)
+* Users are generated from the [Random User API](https://doc.clickup.com/9015076908/d/h/8cnea1c-8155/ab6c00e487114c2/8cnea1c-8615)
 
 * Each user has:
-  * a name
+  * a email
   * a password
 
 * Users can:
@@ -93,7 +93,7 @@ All articles are created and managed internally by users
 
 Design workflows that:
 
-* fetch users from `randomuser.me`
+* fetch users from the Random User API
 * extract relevant fields
 * prepare user data for storage
 * avoid creating duplicate users
