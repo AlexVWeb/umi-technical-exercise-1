@@ -1,0 +1,371 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "favorites/:userId",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Get Favorites1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        928,
+        4800
+      ],
+      "id": "80d72c08-5d54-4adf-9d5b-ed0a67163ab6",
+      "webhookId": "96cfec48-69b6-4ae9-b53d-498480715408"
+    },
+    {
+      "parameters": {
+        "operation": "decode",
+        "token": "={{ $json.token }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        4800
+      ],
+      "id": "0b171841-a033-4a1b-948f-1ea04f530b9d",
+      "name": "JWT4",
+      "credentials": {
+        "jwtAuth": {
+          "id": "7C4v9et21E70AkWA",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const bearer = $input.first().json.jwt;\nconst token = bearer.split(\" \")[1];\n\nreturn [{ json: { token } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        4800
+      ],
+      "id": "8f13711c-9e3d-40d4-90ac-fd8ddc5dadd9",
+      "name": "Parse JWT4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "051787a0-36ed-449b-b1bc-3eba19e44e29",
+              "name": "jwt",
+              "value": "={{ $json.headers.authorization }}",
+              "type": "string"
+            },
+            {
+              "id": "2c51ee4c-204d-4bb1-a689-ac7ac1b9b817",
+              "name": "userId",
+              "value": "={{ $json.params.userId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        4800
+      ],
+      "id": "8b99fb9e-5efe-46dc-956f-b7251fb38218",
+      "name": "fields2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "667ca4eb-5edc-44c4-bb07-e6ea7798d629",
+              "leftValue": "={{ $('fields2').item.json.userId }}",
+              "rightValue": "={{ $json.payload.subject }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1856,
+        4800
+      ],
+      "id": "0eafdb66-3948-4109-bfe9-692082318422",
+      "name": "Check if User is User JWT2"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "favorites_articles",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('fields2').item.json.userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        4784
+      ],
+      "id": "07de2e75-903c-4370-bbd4-2dcb9b967327",
+      "name": "Get many rows1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"success\": false, \"message\": \"Erreur d'authentification\" }",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2080,
+        4976
+      ],
+      "id": "04ea96e9-7b7f-4cf0-b919-56bb2016d47c",
+      "name": "Aucun User trouvé2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3120,
+        4896
+      ],
+      "id": "8f75df69-d63b-40a0-b5e5-63dcf019f91a",
+      "name": "Get a row2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2912,
+        4784
+      ],
+      "id": "21401722-4a5d-41d7-abdc-6b3270837dd5",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  success: true,\n  count: $input.all().length,\n  articles: $json.data\n}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3424,
+        4768
+      ],
+      "id": "6116e8a8-5a32-4431-965c-b4933648019d",
+      "name": "Respond Get Favorites"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3120,
+        4688
+      ],
+      "id": "d7720686-97cc-4cf5-9963-159e2778ae59",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "content": "## 📝 Workflow : Liste des Articles Favoris\n\nCe workflow permet d'exposer un endpoint pour récupérer la liste des articles mis en favoris par un utilisateur donné. Il est protégé par une vérification JWT.\n\n### 🔄 Déroulement :\n1. **Déclencheur (Webhook)** : \n   - Écoute sur `GET /favorites/:userId`.\n2. **Vérification de Sécurité (JWT)** : \n   - Extraction de l'en-tête `Authorization`.\n   - Décodage du token JWT.\n   - Vérification (Nœud If) : L'ID passé dans l'URL (`userId`) doit correspondre de manière stricte au paramètre `subject` du JWT (l'utilisateur authentifié).\n   - ❌ *En cas d'échec* : Retourne une erreur `403` (\"Erreur d'authentification\").\n3. **Extraction des liaisons (Supabase)** : \n   - 🟢 *Si validation réussie*, effectue une requête vers la table `favorites_articles` filtrée par `user_id`.\n4. **Enrichissement des Articles** :\n   - Une boucle (`Loop Over Items`) itère sur chaque favori trouvé afin d'interroger la table `articles` et d'obtenir son contenu complet.\n5. **Formation de la Réponse** :\n   - Le nœud `Aggregate` rassemble l'ensemble des articles.\n   - Le nœud `Respond to Webhook` renvoie une réponse HTTP `200 OK` en JSON contenant le statut de succès, le nombre d'articles (`count`) et les données (`articles`).",
+        "height": 1020,
+        "width": 2958
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        864,
+        4240
+      ],
+      "id": "1ed0df68-289d-4fde-a6e7-063a9625f3cc",
+      "name": "Documentation du workflow"
+    }
+  ],
+  "connections": {
+    "Webhook: Get Favorites1": {
+      "main": [
+        [
+          {
+            "node": "fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT4": {
+      "main": [
+        [
+          {
+            "node": "Check if User is User JWT2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JWT4": {
+      "main": [
+        [
+          {
+            "node": "JWT4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fields2": {
+      "main": [
+        [
+          {
+            "node": "Parse JWT4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if User is User JWT2": {
+      "main": [
+        [
+          {
+            "node": "Get many rows1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aucun User trouvé2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond Get Favorites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8687f7d3d9e363f714b775b8dc45308adccd26099bce354289a57786bcdb1875"
+  }
+}

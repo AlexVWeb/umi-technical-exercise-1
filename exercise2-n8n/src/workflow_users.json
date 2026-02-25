@@ -1,0 +1,511 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "users/create",
+        "options": {}
+      },
+      "name": "Webhook: Users Create",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        144
+      ],
+      "id": "07e7792e-b7ac-48c8-ba78-70e2ba3468f1",
+      "webhookId": "0af545f1-9712-4d0d-b262-196b36309307",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.umi-innovation.com/webhook/random/user",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "yq4R#v5LiS0^dRr1L37z7SjhNKY&r$g2"
+            }
+          ]
+        }
+      },
+      "name": "HTTP Request: Get Users",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        144
+      ],
+      "id": "46bd6252-2678-40ff-9099-02b3af0e94c7"
+    },
+    {
+      "parameters": {
+        "action": "generate",
+        "dataPropertyName": "salt",
+        "encodingType": "hex"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        144
+      ],
+      "id": "f4996c8f-6f30-4591-96db-c43f7134031c",
+      "name": "Crypto"
+    },
+    {
+      "parameters": {
+        "type": "SHA3-512",
+        "value": "={{ $json.saltedPassword }}"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        2384,
+        144
+      ],
+      "id": "5165e739-d636-4b45-b14d-a6a5a18b6277",
+      "name": "Hash MDP"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6b7c08d3-05f3-4493-af5e-e9c854324418",
+              "name": "saltedPassword",
+              "value": "={{ $json.salt }}:{{ $json.login.password }}",
+              "type": "string"
+            },
+            {
+              "id": "cb9e2c55-92ff-4117-9d11-0c478af5aa47",
+              "name": "email",
+              "value": "={{ $json.login.email }}",
+              "type": "string"
+            },
+            {
+              "id": "613ff990-de74-4dc5-abd7-cb7031064bfc",
+              "name": "firstname",
+              "value": "={{ $json.firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "52ada284-51e2-4643-86d3-f91256f90d31",
+              "name": "lastname",
+              "value": "={{ $json.lastname }}",
+              "type": "string"
+            },
+            {
+              "id": "d1b5a2f6-a268-4c4b-938d-49f25d063b56",
+              "name": "salt",
+              "value": "={{ $json.salt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2176,
+        144
+      ],
+      "id": "cf6532de-96f9-4c3c-981e-e66bee575624",
+      "name": "Prepare Hash Password"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "288d71f6-1ff8-469a-88b7-d180bd4ff7cb",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "99637ae3-94a7-4e95-b242-fc471fed0aec",
+              "name": "firstname",
+              "value": "={{ $json.firstname }}",
+              "type": "string"
+            },
+            {
+              "id": "7c08ba73-4f1b-41d0-a9ff-273f6ef82933",
+              "name": "lastname",
+              "value": "={{ $json.lastname }}",
+              "type": "string"
+            },
+            {
+              "id": "d61a5983-3079-4602-ad18-0614a4d69939",
+              "name": "password",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "f3eba633-ca7d-4ae2-9b3b-a722ad8575e8",
+              "name": "salt",
+              "value": "={{ $json.salt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2592,
+        144
+      ],
+      "id": "79c35b7c-9508-4325-91b8-45439ee7f5d4",
+      "name": "Prepare BDD"
+    },
+    {
+      "parameters": {
+        "tableId": "users",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "firstname",
+              "fieldValue": "={{ $('Prepare BDD').item.json.firstname }}"
+            },
+            {
+              "fieldId": "lastname",
+              "fieldValue": "={{ $('Prepare BDD').item.json.lastname }}"
+            },
+            {
+              "fieldId": "password",
+              "fieldValue": "={{ $('Prepare BDD').item.json.password }}"
+            },
+            {
+              "fieldId": "salt",
+              "fieldValue": "={{ $('Prepare BDD').item.json.salt }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Prepare BDD').item.json.email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3312,
+        128
+      ],
+      "id": "87f8e5f6-e45d-4db8-bde1-42afa59feece",
+      "name": "Create User Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b2576346-2951-433e-a7ff-9152df2120f3",
+              "leftValue": "={{$json}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3024,
+        144
+      ],
+      "id": "c51d1a99-e53c-4178-9caa-430171381d5f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json.email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        144
+      ],
+      "id": "e4be26c2-c4e9-4c21-a4c1-9b180b200ded",
+      "name": "Check If User Exist",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c86a1600-a868-4e24-99a5-cb277d4deb21",
+              "leftValue": "={{ $json.login.password }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e7b3b705-9367-4969-8659-708008b21463",
+              "leftValue": "={{ $json.login.password }}",
+              "rightValue": "=^(?=.*[a-zA-Z])(?=.*\\d).{6,}$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1728,
+        144
+      ],
+      "id": "c7bc42cc-4d1c-4c30-b440-1bc113db854c",
+      "name": "Check Password",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "erreur",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3312,
+        288
+      ],
+      "id": "08a65d8c-9f9d-48e6-8fe8-4462b6cf9d8f",
+      "name": "Response Error Check Email"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"Le mot de passe doit contenir Au moins 1 lettre**, au moins 1 chiffre, 6 caractères minimum.\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1968,
+        352
+      ],
+      "id": "ccbff4d5-b346-4750-9491-ec1a4cfa57f9",
+      "name": "Response Error Password"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3520,
+        128
+      ],
+      "id": "5905b2ea-b05c-4b4a-93f3-b994383d9c54",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## 👤 Création d'un Utilisateur\n\n1. **Webhook (POST)** `/users/create` : Point d'entrée pour la demande de création d'un utilisateur.\n2. **Enrichissement (HTTP Request)** : Appel vers une API externe pour générer des données aléatoires ou complémentaires.\n3. **Validation du Mot de passe** : Vérification des critères de sécurité via Regex (min 6 caractères, au moins 1 lettre et 1 chiffre).\n   - ❌ *Erreur 400* si le mot de passe est invalide.\n4. **Sécurisation du Mot de passe** :\n   - Génération d'un `salt` cryptographique aléatoire.\n   - Préparation et Hachage (SHA3-512) du mot de passe combiné au `salt`.\n5. **Vérification d'existence** : Requête vers Supabase pour vérifier si l'email de l'utilisateur existe déjà.\n   - ❌ *Erreur* si l'email est déjà utilisé.\n6. **Création (Supabase)** : Insertion du nouvel utilisateur et de son mot de passe haché en base de données.\n7. **Réponse** : Succès de la création (200 OK).",
+        "height": 832,
+        "width": 2640
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "7d4a4084-f917-4e9a-b69f-6b583ee4ab7a",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Webhook: Users Create": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request: Get Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request: Get Users": {
+      "main": [
+        [
+          {
+            "node": "Check Password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crypto": {
+      "main": [
+        [
+          {
+            "node": "Prepare Hash Password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hash MDP": {
+      "main": [
+        [
+          {
+            "node": "Prepare BDD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Hash Password": {
+      "main": [
+        [
+          {
+            "node": "Hash MDP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare BDD": {
+      "main": [
+        [
+          {
+            "node": "Check If User Exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create User Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create User Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response Error Check Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If User Exist": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Password": {
+      "main": [
+        [
+          {
+            "node": "Crypto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response Error Password",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8687f7d3d9e363f714b775b8dc45308adccd26099bce354289a57786bcdb1875"
+  }
+}

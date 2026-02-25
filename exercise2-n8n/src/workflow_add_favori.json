@@ -1,0 +1,561 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "favorites/add",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Add Favorite",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        3808
+      ],
+      "id": "3f8cc427-22b9-4c36-86bc-2474506c6341",
+      "webhookId": "6ed81fe7-6094-4f9b-9679-bc68e534c434"
+    },
+    {
+      "parameters": {
+        "operation": "decode",
+        "token": "={{ $json.token }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        3808
+      ],
+      "id": "5800c8c6-8ea9-418e-b211-5f6e5bae0842",
+      "name": "JWT",
+      "credentials": {
+        "jwtAuth": {
+          "id": "7C4v9et21E70AkWA",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const bearer = $input.first().json.jwt;\nconst token = bearer.split(\" \")[1];\n\nreturn [{ json: { token } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        3808
+      ],
+      "id": "13d7b519-ce6e-4482-a0e6-eee7dd4e0cff",
+      "name": "Parse JWT"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('fields').item.json.article_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        3808
+      ],
+      "id": "249fe815-10bf-48b0-b593-e8754aaf6f55",
+      "name": "Get Favorite Article",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('fields').item.json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        3808
+      ],
+      "id": "7905cebd-5c9d-4111-b065-3d0a0c5bf319",
+      "name": "Get User If existe",
+      "alwaysOutputData": true,
+      "notesInFlow": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "favorites_articles",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "article_id",
+              "fieldValue": "={{ $('Get Favorite Article').item.json.id }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Get User If existe').item.json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3152,
+        3696
+      ],
+      "id": "5a92db85-a1f0-44e7-8e8d-50a26f492506",
+      "name": "Add Favoris article",
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3344,
+        3696
+      ],
+      "id": "cc67b911-edb4-4aeb-84ab-6bbdf26e8193",
+      "name": "Respond Updated"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"success\": false, \"message\": \"L'ID User ou Article est incorrecte\" }",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2640,
+        3920
+      ],
+      "id": "6f96a9f2-b9a1-4cbb-bf2f-716bb61b21d7",
+      "name": "Respond Unauthorized"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "favorites_articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "article_id",
+              "keyValue": "="
+            },
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('fields').item.json.user_id }}"
+            },
+            {
+              "keyName": "article_id",
+              "keyValue": "={{ $('fields').item.json.article_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        3712
+      ],
+      "id": "6b4e7326-e8c6-4644-969e-3b5bceef5b25",
+      "name": "Get a row",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "88838aac-902b-462b-95aa-c5674373d431",
+              "name": "article_id",
+              "value": "={{ $json.body.article_id }}",
+              "type": "string"
+            },
+            {
+              "id": "2f0be45f-dcaf-41be-98f0-c0372355d4c3",
+              "name": "user_id",
+              "value": "={{ $json.body.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "051787a0-36ed-449b-b1bc-3eba19e44e29",
+              "name": "jwt",
+              "value": "={{ $json.headers.authorization }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        3808
+      ],
+      "id": "a7b8e2d7-cedd-4a4b-8442-6a6c6f038313",
+      "name": "fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "667ca4eb-5edc-44c4-bb07-e6ea7798d629",
+              "leftValue": "={{ $('fields').item.json.user_id }}",
+              "rightValue": "={{ $json.payload.subject }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        3808
+      ],
+      "id": "a7bd150a-382a-4ac8-be5a-41543c33e940",
+      "name": "Check if User is User JWT"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"success\": false, \"message\": \"Erreur d'authentification\" }",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2304,
+        4000
+      ],
+      "id": "5827e9e3-f729-4345-885d-1412f672b4bc",
+      "name": "Aucun User trouvé1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "524a72c9-6c66-4fce-a906-62fd627ee397",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2912,
+        3712
+      ],
+      "id": "e1fc819c-b2dd-44be-b63e-c131a8e9b2fa",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"success\": false, \"message\": \"Déjà ajouté aux favoris\" }",
+        "options": {
+          "responseCode": 406
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3120,
+        3920
+      ],
+      "id": "1578e5c2-9dd1-4466-912f-73692478f60d",
+      "name": "Favoris existant"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e57f45ef-bfc1-40d3-822d-f10b0087f5a1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "3467f7fb-1eda-4580-b9ef-ff8cc775bde2",
+              "leftValue": "={{ $('Get User If existe').item.json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2400,
+        3792
+      ],
+      "id": "aea8f6e2-3c8b-4a93-86e5-ca69ecfdebd8",
+      "name": "Check if ArticleID et UserID exist"
+    },
+    {
+      "parameters": {
+        "content": "## 📝 Workflow : Ajout d'un article aux favoris\n\nCe workflow gère la requête d'ajout d'un article aux favoris d'un utilisateur. Il vérifie l'authenticité de l'utilisateur via JWT et s'assure que l'utilisateur et l'article existent dans Supabase avant d’insérer la relation.\n\n### 🔄 Déroulement :\n1. **Déclencheur (Webhook)** :\n   - Écoute sur `POST /favorites/add`.\n   - Extrait `article_id`, `user_id` du body, et le header `Authorization`.\n2. **Authentification (JWT)** :\n   - Décodage du token.\n   - 🔒 Vérifie que le `user_id` fourni correspond au sujet (`subject`) du JWT. Erreur `403` en cas d'échec.\n3. **Contrôle d'existence (Supabase)** :\n   - Requêtes `GET` pour vérifier que l'utilisateur et l'article existent bien dans leurs tables respectives.\n   - ❌ Erreur `403` si l'un d'eux est introuvable.\n4. **Vérification de doublon** :\n   - 🔍 Cherche dans `favorites_articles` si le lien existe déjà pour ce couple user/article.\n   - ✋ Renvoie HTTP `406` si l'article est déjà en favori.\n5. **Ajout et Réponse** :\n   - Insère la nouvelle relation dans `favorites_articles`.\n   - Renvoie HTTP `200 OK` avec `{ \"success\": true }`.",
+        "height": 930,
+        "width": 2686
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        864,
+        3200
+      ],
+      "id": "94e79bfb-8812-4b43-9ead-82466879f569",
+      "name": "Documentation du workflow1"
+    }
+  ],
+  "connections": {
+    "Webhook: Add Favorite": {
+      "main": [
+        [
+          {
+            "node": "fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT": {
+      "main": [
+        [
+          {
+            "node": "Check if User is User JWT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JWT": {
+      "main": [
+        [
+          {
+            "node": "JWT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Favorite Article": {
+      "main": [
+        [
+          {
+            "node": "Check if ArticleID et UserID exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User If existe": {
+      "main": [
+        [
+          {
+            "node": "Get Favorite Article",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Add Favoris article": {
+      "main": [
+        [
+          {
+            "node": "Respond Updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fields": {
+      "main": [
+        [
+          {
+            "node": "Parse JWT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if User is User JWT": {
+      "main": [
+        [
+          {
+            "node": "Get User If existe",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aucun User trouvé1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Add Favoris article",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Favoris existant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if ArticleID et UserID exist": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8687f7d3d9e363f714b775b8dc45308adccd26099bce354289a57786bcdb1875"
+  }
+}

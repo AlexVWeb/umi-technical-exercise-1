@@ -1,0 +1,324 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "claims": {
+          "expiresIn": 3600,
+          "subject": "={{ $('User Exist in BDD1').item.json.id }}"
+        },
+        "options": {}
+      },
+      "id": "56177cf9-bd00-4f0c-806a-f4fc69402791",
+      "name": "Generate JWT",
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        6240,
+        976
+      ],
+      "credentials": {
+        "jwtAuth": {
+          "id": "7C4v9et21E70AkWA",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  success: true,\n  token: $json.token,\n  userId: $('GET User1').item.json.id\n}) }}",
+        "options": {}
+      },
+      "id": "43458a4f-7a33-4ef4-8794-001ff914c1ce",
+      "name": "200 Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        6448,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth/login",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Login1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        4992,
+        992
+      ],
+      "id": "69981579-515b-4f24-84d3-a40db6a8c147",
+      "webhookId": "a8391910-8f41-4315-8d4c-ba0641d7fa46"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json.body.email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5200,
+        992
+      ],
+      "id": "baa2c951-1e4e-4eed-92aa-ecb7f71713a1",
+      "name": "GET User1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "61a1c9fe-567d-4f67-9085-90a12ef32a4f",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5408,
+        992
+      ],
+      "id": "80c0037b-da10-4d68-a4f7-7ab939e34838",
+      "name": "User Exist in BDD1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "75c82f28-6371-41c2-879b-9a08af1da485",
+              "name": "saltedPassword",
+              "value": "={{ $json.salt }}:{{ $('Webhook: Login1').item.json.body.password }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5616,
+        976
+      ],
+      "id": "edff01c1-1026-4711-b81c-6073f6fab257",
+      "name": "Set Password Field1"
+    },
+    {
+      "parameters": {
+        "type": "SHA3-512",
+        "value": "={{ $json.saltedPassword }}",
+        "dataPropertyName": "password"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        5824,
+        976
+      ],
+      "id": "c7b78056-9d79-4ae1-b2e1-45c43b331f36",
+      "name": "Crypto2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54f12e34-4aa3-4b82-bd96-80dfbb1f3e70",
+              "leftValue": "={{ $json.password }}",
+              "rightValue": "={{ $('GET User1').item.json.password }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        6032,
+        976
+      ],
+      "id": "91022480-a548-4541-a0e1-6a42f5dbe4d4",
+      "name": "Password Match?1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"success\": false, \"message\": \"Invalid credentials\" }",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        6240,
+        1184
+      ],
+      "id": "cf696a97-5a9e-45f9-9af9-2539053eefe1",
+      "name": "401 Invalid Credentials1"
+    },
+    {
+      "parameters": {
+        "content": "## 📝 Workflow : Authentification (Login)\n\nCe workflow gère l'authentification des utilisateurs en vérifiant leurs identifiants (email + mot de passe) et en générant un jeton JWT en cas de succès.\n\n### 🔄 Déroulement :\n1. **Déclencheur (Webhook)** :\n   - Écoute sur `POST /auth/login`.\n   - Attend un payload JSON contenant `email` et `password`.\n2. **Récupération de l'utilisateur (Supabase)** :\n   - Recherche de l'utilisateur dans la table `users` à partir de son `email`.\n   - ❌ Si aucun utilisateur n'est trouvé, renvoie une erreur `401` (\"Invalid credentials\").\n3. **Vérification du mot de passe** :\n   - Reconstruit la chaîne de sécurité en utilisant le `salt` de l'utilisateur stocké en base et le `password` fourni en clair.\n   - Hache cette chaîne avec l'algorithme cryptographique `SHA3-512`.\n   - Compare le mot de passe calculé avec celui stocké en base de données.\n   - ❌ Si cela ne correspond pas, renvoie une erreur `401` (\"Invalid credentials\").\n4. **Génération JWT & Réponse** :\n   - ✅ Si la vérification réussit, un jeton JWT est signé numériquement et sa validité est définie (3600 secondes = 1h).\n   - Renvoie le webhook HTTP `200 OK` contenant le `token` d'accès généré et l'`userId`.",
+        "height": 668,
+        "width": 3084
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3808,
+        768
+      ],
+      "id": "a4af370c-d312-4b85-8189-20b0f4bd88d5",
+      "name": "Documentation du workflow2"
+    }
+  ],
+  "connections": {
+    "Generate JWT": {
+      "main": [
+        [
+          {
+            "node": "200 Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Login1": {
+      "main": [
+        [
+          {
+            "node": "GET User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET User1": {
+      "main": [
+        [
+          {
+            "node": "User Exist in BDD1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Exist in BDD1": {
+      "main": [
+        [
+          {
+            "node": "Set Password Field1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "401 Invalid Credentials1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Password Field1": {
+      "main": [
+        [
+          {
+            "node": "Crypto2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crypto2": {
+      "main": [
+        [
+          {
+            "node": "Password Match?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Password Match?1": {
+      "main": [
+        [
+          {
+            "node": "Generate JWT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "401 Invalid Credentials1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8687f7d3d9e363f714b775b8dc45308adccd26099bce354289a57786bcdb1875"
+  }
+}

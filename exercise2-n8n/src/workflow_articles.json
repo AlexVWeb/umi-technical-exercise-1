@@ -1,0 +1,387 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 📝 Création d'un Article\n\n1. **Webhook (POST)** protégé par JWT Auth.\n2. **Validation des données entrantes** : Titre et description requis.\n3. **Extraction du Payload JWT** : On parse l'en-tête, décode le token pour identifier l'utilisateur.\n4. **Vérification** : On s'assure que le contenu et l'utilisateur sont valides.\n5. **Insertion en BDD** : On enregistre le nouvel article dans la table `articles` de Supabase.\n6. **Réponse 201** si tout est OK (ou 403 en cas d'erreur).",
+        "height": 680,
+        "width": 2112,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        896,
+        1360
+      ],
+      "id": "086a3aab-89ea-41d4-bcfa-25734f7c9cab",
+      "name": "Sticky Note Create"
+    },
+    {
+      "parameters": {
+        "tableId": "articles",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $('Webhook: Create Article').item.json.body.title }}"
+            },
+            {
+              "fieldId": "body",
+              "fieldValue": "={{ $('Webhook: Create Article').item.json.body.description }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.payload.subject }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        1536
+      ],
+      "id": "cb18a7db-235d-467f-872b-0e6f5c001b6e",
+      "name": "Insert Article1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, article: $json }) }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2752,
+        1536
+      ],
+      "id": "7bb6a9cf-de57-4ffe-b56e-7534b5e0a797",
+      "name": "Respond Created1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "articles/create",
+        "authentication": "jwtAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Create Article",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        1648
+      ],
+      "id": "c19082c6-e1ee-4117-8fc8-e635f4dc7a58",
+      "webhookId": "ac689cb9-4caa-4063-a084-1d2a11a10e07",
+      "credentials": {
+        "jwtAuth": {
+          "id": "7C4v9et21E70AkWA",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "decode",
+        "token": "={{ $json.token }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        1648
+      ],
+      "id": "2db1b917-d1f1-4c37-bd00-e8fc16b6b1bf",
+      "name": "JWT2",
+      "credentials": {
+        "jwtAuth": {
+          "id": "7C4v9et21E70AkWA",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const bearer = $('Webhook: Create Article').first().json.headers.authorization;\nconst token = bearer.split(\" \")[1];\n\nreturn [{ json: { token } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        1648
+      ],
+      "id": "23402770-f370-43f9-a806-d78fc7d96d3b",
+      "name": "Parse JWT2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        1648
+      ],
+      "id": "8024c1c5-2116-4820-96fd-782d94ca2a54",
+      "name": "Get User1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "NRMeRBHUiJicTLhu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e3077268-5bc1-49ab-87db-4ff30a948043",
+              "leftValue": "={{ $('Get User1').item.json.id }}",
+              "rightValue": "={{ $json.payload.subject }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2000,
+        1648
+      ],
+      "id": "e90c4392-d1c3-4079-8208-caac2373c06d",
+      "name": "Check If UserID === UserID JWT1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"success\": false, \"message\": \"Unauthorized\" }",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2464,
+        1840
+      ],
+      "id": "cc977188-eb1a-4988-9c55-e7d46ecfea0c",
+      "name": "Respond Unauthorized5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"success\": false, \"message\": \"L'article doit contenir un titre et une description\" }",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1456,
+        1888
+      ],
+      "id": "aed8734e-799e-4b68-afcf-7c6e56082e40",
+      "name": "Respond Unauthorized6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8d0490f-2e89-484c-85ed-76af6adcd946",
+              "leftValue": "={{ $('Webhook: Create Article').item.json.body.title }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c068b70c-f282-4307-8505-c4814592e767",
+              "leftValue": "={{ $('Webhook: Create Article').item.json.body.title }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "428fc25f-a05b-44b1-bc83-480d2bad4aa6",
+              "leftValue": "={{ $('Webhook: Create Article').item.json.body.description }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c99c97d5-fe42-4a44-b889-37b80cec059c",
+              "leftValue": "={{ $('Webhook: Create Article').item.json.body.description }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1184,
+        1648
+      ],
+      "id": "bd29cadb-45b2-4c67-a920-913a385f0086",
+      "name": "check title / content article3"
+    }
+  ],
+  "connections": {
+    "Insert Article1": {
+      "main": [
+        [
+          {
+            "node": "Respond Created1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Create Article": {
+      "main": [
+        [
+          {
+            "node": "check title / content article3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT2": {
+      "main": [
+        [
+          {
+            "node": "Check If UserID === UserID JWT1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JWT2": {
+      "main": [
+        [
+          {
+            "node": "JWT2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User1": {
+      "main": [
+        [
+          {
+            "node": "Parse JWT2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If UserID === UserID JWT1": {
+      "main": [
+        [
+          {
+            "node": "Insert Article1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unauthorized5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check title / content article3": {
+      "main": [
+        [
+          {
+            "node": "Get User1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unauthorized6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8687f7d3d9e363f714b775b8dc45308adccd26099bce354289a57786bcdb1875"
+  }
+}
